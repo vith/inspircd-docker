@@ -3,7 +3,7 @@ FROM alpine:3.7
 LABEL maintainer1="Adam <adam@anope.org>" \
       maintainer2="Sheogorath <sheogorath@shivering-isles.com>"
 
-ARG VERSION=insp20
+ARG VERSION=master
 ARG CONFIGUREARGS=
 ARG EXTRASMODULES=
 ARG RUN_DEPENDENCIES=
@@ -26,10 +26,10 @@ RUN apk add --no-cache --virtual .build-utils gcc g++ make git pkgconfig perl \
     # Add and overwrite modules
     { [ $(ls /src/modules/ | wc -l) -gt 0 ] && cp -r /src/modules/* /src/inspircd/src/modules/ || echo "No modules overwritten/added by repository"; } && \
     # write a little script to handle empty extra modules
-    echo $EXTRASMODULES | xargs --no-run-if-empty ./modulemanager install && \ 
+    echo $EXTRASMODULES | xargs --no-run-if-empty ./modulemanager install && \
     # Enable GNUtls with SHA256 fingerprints
     ./configure --enable-extras=m_ssl_gnutls.cpp $CONFIGUREARGS && \
-    ./configure --disable-interactive --prefix=/inspircd/ --uid 10000  \
+    ./configure --development --prefix=/inspircd/ --uid 10000  \
         --with-cc='c++ -DINSPIRCD_GNUTLS_ENABLE_SHA256_FINGERPRINT' && \
     # Run build multi-threaded
     make -j`getconf _NPROCESSORS_ONLN` && \
@@ -41,27 +41,15 @@ RUN apk add --no-cache --virtual .build-utils gcc g++ make git pkgconfig perl \
     rm -rf /src && \
     rm -rf /inspircd/conf && \
     ln -s /dev/stdout /inspircd/logs/ircd.log && \
-    # Make sure the application is allowed to write to it's own direcotry for 
+    # Make sure the application is allowed to write to it's own direcotry for
     # logging and generation of certificates
     chown -R inspircd /inspircd/ && \
     chown -R inspircd /conf/
 
-# Copy the config after the build enables us to use the caching layer as base 
-# instead of rebuild the whole image when you only changed a few lines in the 
+# Copy the config after the build enables us to use the caching layer as base
+# instead of rebuild the whole image when you only changed a few lines in the
 # config or the entrypoing script.
-COPY conf /conf
 COPY entrypoint.sh /inspircd/
-
-# Create a volume in case you want to keep your configs using docker volumes.
-# Don't use this location if you want to mount a host directory.
-#
-# Volumes are prefilled with the same content while host directories stay empty.
-# In order to minimize the delta we persist this directory in case of docker 
-# volumes but use it as source to fill the empty host directory if you want to
-# mount it.
-#
-# This helps newbies and people who want to modify the config a little bit.
-VOLUME ["/conf"]
 
 WORKDIR /inspircd/
 
