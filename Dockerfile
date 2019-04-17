@@ -17,7 +17,8 @@ RUN apk add --no-cache --virtual .build-utils gcc g++ make git pkgconfig perl \
     # Install all permanent packages as long-therm dependencies
     apk add --no-cache --virtual .dependencies libgcc libstdc++ gnutls gnutls-utils $RUN_DEPENDENCIES && \
     # Create a user to run inspircd later
-    adduser -u 10000 -h /inspircd/ -D -S inspircd && \
+    addgroup -g 10000 inspircd && \
+    adduser -u 10000 -g 10000 -h /inspircd/ -D -S inspircd && \
     mkdir -p /src /conf && \
     cd /src && \
     # Clone the requested version
@@ -29,7 +30,7 @@ RUN apk add --no-cache --virtual .build-utils gcc g++ make git pkgconfig perl \
     echo $EXTRASMODULES | xargs --no-run-if-empty ./modulemanager install && \ 
     # Enable GNUtls with SHA256 fingerprints
     ./configure --enable-extras=m_ssl_gnutls.cpp $CONFIGUREARGS && \
-    ./configure --disable-interactive --prefix=/inspircd/ --uid 10000  \
+    ./configure --disable-interactive --development --prefix=/inspircd/ --uid 10000 --gid 10000  \
         --with-cc='c++ -DINSPIRCD_GNUTLS_ENABLE_SHA256_FINGERPRINT' && \
     # Run build multi-threaded
     make -j`getconf _NPROCESSORS_ONLN` && \
