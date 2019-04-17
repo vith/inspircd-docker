@@ -3,7 +3,7 @@ FROM alpine:3.9.2
 LABEL maintainer1="Adam <adam@anope.org>" \
       maintainer2="Sheogorath <sheogorath@shivering-isles.com>"
 
-ARG VERSION=insp20
+ARG VERSION=insp3+ircv3-ctctags
 ARG CONFIGUREARGS=
 ARG EXTRASMODULES=
 ARG RUN_DEPENDENCIES=
@@ -21,7 +21,7 @@ RUN apk add --no-cache --virtual .build-utils gcc g++ make git pkgconfig perl \
     mkdir -p /src /conf && \
     cd /src && \
     # Clone the requested version
-    git clone https://github.com/inspircd/inspircd.git inspircd --depth 1 -b $VERSION && \
+    git clone https://github.com/SaberUK/inspircd.git inspircd --depth 1 -b $VERSION && \
     cd /src/inspircd && \
     # Add and overwrite modules
     { [ $(ls /src/modules/ | wc -l) -gt 0 ] && cp -r /src/modules/* /src/inspircd/src/modules/ || echo "No modules overwritten/added by repository"; } && \
